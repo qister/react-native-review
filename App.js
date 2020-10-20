@@ -1,9 +1,5 @@
 import React, { useState } from 'react'
-import {
-  StyleSheet,
-  View,
-  Alert,
-} from 'react-native'
+import { StyleSheet, View, Alert } from 'react-native'
 import * as Font from 'expo-font'
 import { AppLoading } from 'expo'
 
@@ -15,12 +11,11 @@ async function loadApplication() {
 }
 
 import { MainLayout } from './src/MainLayout'
+import { ScreenState } from './src/context/screen/ScreenState'
 import { TodoState } from './src/context/todo/TodoState'
-
 
 export default function App() {
   const [isReady, setIsReady] = useState(false)
-
 
   if (!isReady) {
     return (
@@ -32,15 +27,11 @@ export default function App() {
     )
   }
 
-  
-
-
-
   return (
-    <TodoState>
-      <MainLayout/>
-    </TodoState>
+    <ScreenState>
+      <TodoState>
+        <MainLayout />
+      </TodoState>
+    </ScreenState>
   )
 }
-
-
