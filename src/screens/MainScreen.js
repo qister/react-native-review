@@ -2,20 +2,24 @@ import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { StyleSheet, View, FlatList, Image, Dimensions } from 'react-native'
 import { AddTodo } from '../components/AddTodo'
 import { Todo } from '../components/Todo'
+import { AppButton } from '../components/ui/AppButton'
 import { AppLoader } from '../components/ui/AppLoader'
+import { AppText } from '../components/ui/AppText'
 import { ScreenContext } from '../context/screen/screenContext'
 import { TodoContext } from '../context/todo/todoContext'
 import { THEME } from '../theme'
 
 export const MainScreen = () => {
-  const { addTodo, todos, removeTodo, fetchTodos, loading, error } = useContext(TodoContext)
+  const { addTodo, todos, removeTodo, fetchTodos, loading, error } = useContext(
+    TodoContext,
+  )
   const { changeScreen } = useContext(ScreenContext)
 
   const [deviceWidth, setDeviceWidth] = useState(
     Dimensions.get('window').width - THEME.PADDING_HORIZONTAL * 2,
   )
 
-  const loadTodos = useCallback( async () => await fetchTodos(), [fetchTodos])
+  const loadTodos = useCallback(async () => await fetchTodos(), [fetchTodos])
 
   useEffect(() => {
     loadTodos()
@@ -35,7 +39,18 @@ export const MainScreen = () => {
   })
 
   if (loading) {
-    return <AppLoader/>
+    return <AppLoader />
+  }
+
+  console.log('Error: ', error)
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <AppText style={styles.error}>{error}</AppText>
+        <AppButton onPress={loadTodos}>Повторить</AppButton>
+      </View>
+    )
   }
 
   let content = (
@@ -88,5 +103,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  error: {
+    fontSize: 20,
+    color: THEME.DANGER_COLOR,
   },
 })
