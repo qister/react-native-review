@@ -1,5 +1,6 @@
 import React, { useContext, useReducer } from 'react'
 import { Alert } from 'react-native'
+import { Http } from '../../http'
 import { ScreenContext } from '../screen/screenContext'
 import {
   ADD_TODO,
@@ -25,18 +26,16 @@ export const TodoState = ({ children }) => {
   const [state, dispatch] = useReducer(todoReducer, initialState)
 
   const addTodo = async (title) => {
-    const response = await fetch(
-      'https://react-native-todo-app-5db5e.firebaseio.com/todos.json',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title }),
-      },
-    )
-    const data = await response.json()
-    console.log('ID: ', data.name)
+    clearError()
+    try {
+      const data = await Http.post(
+        'https://react-native-todo-app-5db5e.firebaseio.com/todos.json',
+        { title },
+      )
+    } catch (e) {
+      showError('Что то пошло ге так')
+    }
+
     dispatch({ type: ADD_TODO, title, id: data.name })
   }
 
@@ -55,15 +54,18 @@ export const TodoState = ({ children }) => {
           style: 'destructive',
           onPress: async () => {
             changeScreen(null)
-            await fetch(
+            await Http.delete(
               `https://react-native-todo-app-5db5e.firebaseio.com/todos/${id}.json`,
-              {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              },
             )
+            // await fetch(
+            //   `https://react-native-todo-app-5db5e.firebaseio.com/todos/${id}.json`,
+            //   {
+            //     method: 'DELETE',
+            //     headers: {
+            //       'Content-Type': 'application/json',
+            //     },
+            //   },
+            // )
             dispatch({ type: REMOVE_TODO, id })
           },
         },
@@ -75,16 +77,7 @@ export const TodoState = ({ children }) => {
   const updateTodo = async (id, title) => {
     clearError()
     try {
-      await fetch(
-        `https://react-native-todo-app-5db5e.firebaseio.com/todos/${id}.json`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ title }),
-        },
-      )
+      await Http.patch(`https://react-native-todo-app-5db5e.firebaseio.com/todos/${id}.json`, {title})
       dispatch({ type: UPDATE_TODO, id, title })
     } catch (e) {
       showError('Что-то пошло не так...')
@@ -103,17 +96,7 @@ export const TodoState = ({ children }) => {
     showLoader()
     clearError()
     try {
-      const response = await fetch(
-        'https://react-native-todo-app-5db5e.firebaseio.com/todos.json',
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      const data = await response.json()
+      const data = await Http.get('https://react-native-todo-app-5db5e.firebaseio.com/todos.json')
       // console.log('Fetch Data: ', data)
       const todos = Object.keys(data).map((key) => ({ ...data[key], id: key }))
       dispatch({ type: FETCH_TODOS, todos })
